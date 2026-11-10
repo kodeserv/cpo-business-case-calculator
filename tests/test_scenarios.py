@@ -18,10 +18,12 @@ def test_pessimistic_cuts_utilisation_and_price():
     assert s.revenue.price_per_kwh_incl_gst == pytest.approx(11.8 * 0.9)
 
 
-def test_optimistic_utilisation_never_exceeds_100():
+def test_optimistic_utilisation_never_exceeds_uptime():
     site = simple_site()
-    high = site.model_copy(update={"operations": site.operations.model_copy(update={"utilisation_pct_year1": 90})})
-    assert scenario_inputs(high, "optimistic").operations.utilisation_pct_year1 == 100
+    high = site.model_copy(
+        update={"operations": site.operations.model_copy(update={"utilisation_pct_year1": 80, "uptime_pct": 90})}
+    )
+    assert scenario_inputs(high, "optimistic").operations.utilisation_pct_year1 == 90
 
 
 @pytest.mark.parametrize("key", list(PRESETS))

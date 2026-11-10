@@ -52,6 +52,12 @@ class Operations(_Input):
     staff_and_other_per_month: Rupees = 0
 
     @model_validator(mode="after")
+    def _utilisation_within_uptime(self) -> "Operations":
+        if self.utilisation_pct_year1 > self.uptime_pct:
+            raise ValueError("utilisation cannot exceed uptime")
+        return self
+
+    @model_validator(mode="after")
     def _one_rent_model(self) -> "Operations":
         if self.rent_per_month > 0 and self.rent_share_pct > 0:
             raise ValueError("use either fixed rent or revenue share, not both")

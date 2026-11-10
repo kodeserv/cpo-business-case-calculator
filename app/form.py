@@ -45,9 +45,9 @@ GROUPS: list[tuple[str, list[FormField]]] = [
         FormField("revenue.other_income_per_month", "Other income (Rs/month)", "Ads, parking, retail tie-ups.", "rupees"),
     ]),
     ("Operations", [
-        FormField("operations.utilisation_pct_year1", "Utilisation in year 1 (%)", "Energy delivered / (rated power x 24 h). Indian public DC sites often run below 10%.", "pct"),
+        FormField("operations.utilisation_pct_year1", "Utilisation in year 1 (%)", "Energy delivered / (rated power x 24 h x 365), the usual energy-based measure. Indian public chargers often run at 1-10%.", "pct"),
         FormField("operations.utilisation_growth_pts_per_year", "Utilisation growth (points/year)", "Added each year: 2 means 8% -> 10% -> 12%.", "pct"),
-        FormField("operations.uptime_pct", "Uptime (%)", "Share of time the chargers are working.", "pct"),
+        FormField("operations.uptime_pct", "Uptime (%)", "Share of time the chargers are working. Utilisation cannot exceed it.", "pct"),
         FormField("operations.om_per_charger_year", "O&M and AMC (Rs/charger/year)", "AMC quote from the charger vendor.", "rupees"),
         FormField("operations.csms_per_charger_month", "CSMS (Rs/charger/month)", "From your CSMS contract.", "rupees"),
         FormField("operations.rent_per_month", "Fixed rent (Rs/month)", "Use this or revenue share, not both.", "rupees"),

@@ -28,9 +28,18 @@ def test_losses_increase_energy_bought_not_energy_sold():
     assert row.energy_cost == pytest.approx(8_760 / 0.8 * 5)
 
 
-def test_utilisation_grows_by_points_and_caps_at_100():
+def test_utilisation_grows_by_points_and_caps_at_uptime():
     rows = yearly_model(simple_site(utilisation_growth_pts_per_year=50))
     assert [r.utilisation_pct for r in rows] == [10, 60, 100]
+    site = simple_site(utilisation_growth_pts_per_year=50).model_copy()
+    capped = site.model_copy(update={"operations": site.operations.model_copy(update={"uptime_pct": 90})})
+    assert [r.utilisation_pct for r in yearly_model(capped)] == [10, 60, 90]
+
+
+def test_uptime_does_not_reduce_energy_below_the_utilisation_figure():
+    site = simple_site()
+    lower_uptime = site.model_copy(update={"operations": site.operations.model_copy(update={"uptime_pct": 95})})
+    assert year_row(lower_uptime, 1).energy_kwh == pytest.approx(8_760)  # 10 kW x 8760 h x 10%
 
 
 def test_revenue_share_comes_off_revenue_and_fixed_rent_goes_to_fixed_costs():
@@ -45,7 +54,7 @@ def test_one_row_per_year_of_project_life():
 
 
 def test_breakeven_utilisation_hand_checked():
-    # margin Rs 5/kWh, fixed Rs 10,000 -> 2,000 kWh a year out of 87,600 available = 2.283%
+    # margin Rs 5/kWh, fixed Rs 10,000 -> 2,000 kWh a year out of 87,600 rated = 2.283%
     assert breakeven_utilisation_pct(simple_site()) == pytest.approx(2_000 / 87_600 * 100)
 
 

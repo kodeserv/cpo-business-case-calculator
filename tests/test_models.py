@@ -65,3 +65,8 @@ def test_gross_capex_adds_hardware_and_site_costs():
 def test_subsidy_above_capex_is_rejected():
     with pytest.raises(ValidationError, match="cannot exceed"):
         make_site(capex=Capex(electrical=100_000, subsidy=10_000_000))
+
+
+def test_utilisation_above_uptime_is_rejected():
+    with pytest.raises(ValidationError, match="cannot exceed uptime"):
+        Operations(utilisation_pct_year1=96, uptime_pct=95)
