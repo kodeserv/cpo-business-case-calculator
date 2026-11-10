@@ -55,3 +55,13 @@ def test_inputs_are_immutable():
     site = make_site()
     with pytest.raises(ValidationError):
         site.capex.subsidy = 100
+
+
+def test_gross_capex_adds_hardware_and_site_costs():
+    # 2 x 12 lakh + 2 x 60k hardware + 15 lakh electrical
+    assert make_site().gross_capex == 2_400_000 + 120_000 + 1_500_000
+
+
+def test_subsidy_above_capex_is_rejected():
+    with pytest.raises(ValidationError, match="cannot exceed"):
+        make_site(capex=Capex(electrical=100_000, subsidy=10_000_000))

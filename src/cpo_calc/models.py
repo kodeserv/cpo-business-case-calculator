@@ -80,3 +80,15 @@ class SiteInputs(_Input):
     @property
     def charger_count(self) -> int:
         return sum(g.count for g in self.chargers)
+
+    @property
+    def gross_capex(self) -> float:
+        c = self.capex
+        hardware = sum(g.hardware_cost_each * g.count for g in self.chargers)
+        return hardware + c.electrical + c.civil + c.software_and_commissioning
+
+    @model_validator(mode="after")
+    def _subsidy_within_capex(self) -> "SiteInputs":
+        if self.capex.subsidy > self.gross_capex:
+            raise ValueError("subsidy cannot exceed total capex")
+        return self
