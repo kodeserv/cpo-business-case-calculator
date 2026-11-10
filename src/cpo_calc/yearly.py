@@ -106,3 +106,10 @@ def breakeven_utilisation_pct(site: SiteInputs, year: int = 1) -> float | None:
 
 def yearly_model(site: SiteInputs) -> list[YearRow]:
     return [year_row(site, t) for t in range(1, site.finance.project_life_years + 1)]
+
+
+def ebitda_at_utilisation(site: SiteInputs, utilisation_pct: float, year: int = 1) -> float:
+    """EBITDA in `year` if the site ran at `utilisation_pct`, all else unchanged."""
+    energy_kwh = _available_kwh(site) * utilisation_pct / 100
+    other_income = site.revenue.other_income_per_month * 12
+    return energy_kwh * _per_kwh(site, year).margin + other_income - _fixed_costs(site, year)

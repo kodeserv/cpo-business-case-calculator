@@ -1,7 +1,7 @@
 import pytest
 
 from cpo_calc.models import Energy, Revenue
-from cpo_calc.yearly import breakeven_utilisation_pct, year_row, yearly_model
+from cpo_calc.yearly import breakeven_utilisation_pct, ebitda_at_utilisation, year_row, yearly_model
 from tests.factories import simple_site
 
 
@@ -68,3 +68,9 @@ def test_breakeven_is_zero_when_other_income_covers_fixed_costs():
         update={"revenue": Revenue(price_per_kwh_incl_gst=11.8, other_income_per_month=1_000)}
     )
     assert breakeven_utilisation_pct(site) == 0
+
+
+def test_ebitda_at_utilisation_matches_the_yearly_row():
+    site = simple_site()
+    assert ebitda_at_utilisation(site, 10) == pytest.approx(year_row(site, 1).ebitda)
+    assert ebitda_at_utilisation(site, breakeven_utilisation_pct(site)) == pytest.approx(0, abs=1e-6)
