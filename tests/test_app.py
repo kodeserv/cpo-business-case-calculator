@@ -35,3 +35,11 @@ def test_page_shows_validation_errors_instead_of_crashing():
     at.number_input(key="operations.rent_per_month").set_value(10_000.0).run()
     assert not at.exception
     assert "not both" in at.error[0].value
+
+
+def test_page_shows_six_tiles_and_scenarios():
+    at = AppTest.from_file("../app/streamlit_app.py").run()
+    assert [m.label for m in at.metric] == [
+        "Net capex", "Payback", "Breakeven utilisation", "Year-3 EBITDA", "NPV", "IRR",
+    ]
+    assert at.metric[0].value == "₹43.0 L"
