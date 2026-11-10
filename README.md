@@ -50,16 +50,18 @@ For each year *t* of the project life:
 
 - **Utilisation** is energy-based, the measure most public reports use: energy delivered ÷
   (rated power × every hour of the year). It is not the time a car is plugged in, which reads
-  higher. It grows by a fixed number of points each year and can never exceed uptime.
+  higher. It grows by a fixed number of points each year until it reaches your maximum
+  utilisation, and it can never exceed uptime.
 - **Escalation:** the energy and demand charges rise with the tariff escalation; the selling price
   rises with the price escalation. Other costs stay flat.
-- **Breakeven utilisation** is the year-1 utilisation at which EBITDA is zero:
+- **Breakeven utilisation** is the year-1 utilisation at which EBITDA is zero (shown as not
+  reachable if it is above your maximum utilisation):
   (fixed costs − other income) ÷ (rated kWh × margin per kWh).
 - **Cash flow** is net capex (capex − subsidy) in year 0, then EBITDA each year.
   **Payback** is interpolated within the year. **NPV** uses your discount rate. **IRR** is
   found by bisection.
-- **Scenarios:** pessimistic takes 70% of utilisation and 90% of price; optimistic 130% and 110%,
-  with utilisation capped at uptime.
+- **Scenarios:** pessimistic takes 70% of utilisation and 90% of price; optimistic 130% and 110%.
+  The maximum utilisation stays as you entered it.
 
 Worked year-1 numbers for each preset are in [`examples/hand_checked.md`](examples/hand_checked.md)
 and are asserted to the rupee in the tests.

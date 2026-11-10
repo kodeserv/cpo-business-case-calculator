@@ -44,6 +44,7 @@ class Revenue(_Input):
 class Operations(_Input):
     utilisation_pct_year1: Percent
     utilisation_growth_pts_per_year: Annotated[float, Field(ge=0)] = 0
+    max_utilisation_pct: Percent = 100
     uptime_pct: Percent = 95
     om_per_charger_year: Rupees = 0
     csms_per_charger_month: Rupees = 0
@@ -51,10 +52,15 @@ class Operations(_Input):
     rent_share_pct: Percent = 0
     staff_and_other_per_month: Rupees = 0
 
+    @property
+    def utilisation_ceiling_pct(self) -> float:
+        """Utilisation never goes above the user's maximum, nor above uptime."""
+        return min(self.max_utilisation_pct, self.uptime_pct)
+
     @model_validator(mode="after")
-    def _utilisation_within_uptime(self) -> "Operations":
-        if self.utilisation_pct_year1 > self.uptime_pct:
-            raise ValueError("utilisation cannot exceed uptime")
+    def _utilisation_within_ceiling(self) -> "Operations":
+        if self.utilisation_pct_year1 > self.utilisation_ceiling_pct:
+            raise ValueError("year-1 utilisation cannot exceed maximum utilisation or uptime")
         return self
 
     @model_validator(mode="after")

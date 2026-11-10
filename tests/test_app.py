@@ -13,7 +13,7 @@ def test_form_state_round_trips_every_preset(key):
 
 
 def test_form_covers_every_input_field():
-    assert len(ALL_FIELDS) == len(to_state(PRESETS["highway_dc"].inputs)) == 27
+    assert len(ALL_FIELDS) == len(to_state(PRESETS["highway_dc"].inputs)) == 28
 
 
 def test_invalid_form_state_raises():
