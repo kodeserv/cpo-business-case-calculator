@@ -34,7 +34,7 @@ GROUPS: list[tuple[str, list[FormField]]] = [
     ]),
     ("Electricity", [
         FormField("energy.energy_charge_per_kwh", "Energy charge (Rs/kWh)", "EV charging category in your DISCOM's current tariff order.", "rate"),
-        FormField("energy.demand_charge_per_kva_month", "Demand charge (Rs/kVA/month)", "Fixed charge in the same tariff order. Some states waive it for EV connections.", "rate"),
+        FormField("energy.demand_charge_per_kva_month", "Demand charge (Rs/kVA/month)", "Public stations: usually 0, as the 2024 MoP guidelines ask for an energy-only tariff until March 2028. Captive or depot connections often pay it. Check your state's tariff order.", "rate"),
         FormField("energy.contracted_load_kva", "Contracted load (kVA)", "Sanctioned load on the connection.", "kw"),
         FormField("energy.losses_pct", "Losses (%)", "Charger and cable losses; 5-8% is typical.", "pct"),
     ]),

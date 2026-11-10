@@ -44,12 +44,8 @@ HIGHWAY_DC = Preset(
     inputs=SiteInputs(
         chargers=[ChargerGroup(power_kw=60, count=2, hardware_cost_each=1_100_000)],
         capex=Capex(electrical=1_500_000, civil=500_000, software_and_commissioning=100_000),
-        energy=Energy(
-            energy_charge_per_kwh=7.5,
-            demand_charge_per_kva_month=200,
-            contracted_load_kva=140,
-            losses_pct=7,
-        ),
+        # Public station: single-part tariff (energy only) under the 2024 MoP guidelines.
+        energy=Energy(energy_charge_per_kwh=7.5, contracted_load_kva=140, losses_pct=7),
         revenue=Revenue(price_per_kwh_incl_gst=22, payment_fees_pct=2),
         operations=Operations(
             utilisation_pct_year1=8,
@@ -85,23 +81,25 @@ APARTMENT_AC = Preset(
 FLEET_DEPOT_DC = Preset(
     key="fleet_depot_dc",
     title="Fleet depot DC",
-    summary="4 x 30 kW DC charging a cab or delivery fleet overnight, billed by invoice.",
+    summary="4 x 30 kW DC charging a cab or delivery fleet overnight in its own yard, billed by invoice.",
     inputs=SiteInputs(
         chargers=[ChargerGroup(power_kw=30, count=4, hardware_cost_each=600_000)],
         capex=Capex(electrical=1_000_000, civil=300_000, software_and_commissioning=80_000),
+        # Captive connection, so a demand charge applies; charging is mostly overnight.
         energy=Energy(
-            energy_charge_per_kwh=7.5,
-            demand_charge_per_kva_month=200,
+            energy_charge_per_kwh=7,
+            demand_charge_per_kva_month=150,
             contracted_load_kva=130,
             losses_pct=7,
         ),
-        revenue=Revenue(price_per_kwh_incl_gst=15),
+        # Priced below public DC (Rs 18-24/kWh) so the fleet has a reason to sign.
+        revenue=Revenue(price_per_kwh_incl_gst=17),
         operations=Operations(
             utilisation_pct_year1=20,
             utilisation_growth_pts_per_year=2,
             om_per_charger_year=30_000,
             csms_per_charger_month=800,
-            rent_per_month=25_000,
+            rent_per_month=10_000,
             staff_and_other_per_month=20_000,
         ),
         finance=_FINANCE,
