@@ -30,3 +30,8 @@ def test_optimistic_utilisation_never_exceeds_uptime():
 def test_npv_rises_from_pessimistic_to_optimistic(key):
     results = evaluate_scenarios(PRESETS[key].inputs)
     assert results["pessimistic"].npv < results["base"].npv < results["optimistic"].npv
+
+
+def test_optimistic_utilisation_stops_at_maximum():
+    site = simple_site(max_utilisation_pct=12)
+    assert scenario_inputs(site, "optimistic").operations.utilisation_pct_year1 == 12

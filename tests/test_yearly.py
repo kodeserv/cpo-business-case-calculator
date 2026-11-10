@@ -83,3 +83,17 @@ def test_ebitda_at_utilisation_matches_the_yearly_row():
     site = simple_site()
     assert ebitda_at_utilisation(site, 10) == pytest.approx(year_row(site, 1).ebitda)
     assert ebitda_at_utilisation(site, breakeven_utilisation_pct(site)) == pytest.approx(0, abs=1e-6)
+
+
+def test_growth_stops_at_maximum_utilisation():
+    rows = yearly_model(simple_site(utilisation_growth_pts_per_year=4, max_utilisation_pct=15))
+    assert [r.utilisation_pct for r in rows] == [10, 14, 15]
+
+
+def test_breakeven_above_maximum_utilisation_is_not_reachable():
+    # breakeven is 2.28% (see the hand-checked test); a 2% ceiling puts it out of reach
+    site = simple_site(utilisation_growth_pts_per_year=0)
+    capped = site.model_copy(
+        update={"operations": site.operations.model_copy(update={"utilisation_pct_year1": 2, "max_utilisation_pct": 2})}
+    )
+    assert breakeven_utilisation_pct(capped) is None

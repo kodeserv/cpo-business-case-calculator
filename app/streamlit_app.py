@@ -89,7 +89,8 @@ with right:
     st.plotly_chart(charts.ebitda_vs_utilisation(site, result))
     if result.breakeven_utilisation_pct is None:
         st.caption(
-            f"No utilisation up to your {site.operations.uptime_pct:g}% uptime covers the fixed costs at this margin."
+            f"No utilisation up to your {site.operations.utilisation_ceiling_pct:g}% ceiling "
+            "(maximum utilisation or uptime) covers the fixed costs at this margin."
         )
     else:
         st.caption(

@@ -22,9 +22,10 @@ class YearRow:
 
 
 def utilisation_pct(site: SiteInputs, year: int) -> float:
-    """Energy-based utilisation: kWh delivered / (rated kW x all hours). Downtime caps it at uptime."""
+    """Energy-based utilisation: kWh delivered / (rated kW x all hours), growing up to the ceiling."""
     ops = site.operations
-    return min(ops.utilisation_pct_year1 + ops.utilisation_growth_pts_per_year * (year - 1), ops.uptime_pct)
+    grown = ops.utilisation_pct_year1 + ops.utilisation_growth_pts_per_year * (year - 1)
+    return min(grown, ops.utilisation_ceiling_pct)
 
 
 @dataclass(frozen=True)
@@ -94,7 +95,7 @@ def year_row(site: SiteInputs, year: int) -> YearRow:
 
 
 def breakeven_utilisation_pct(site: SiteInputs, year: int = 1) -> float | None:
-    """Utilisation at which EBITDA is zero in `year`; None if no utilisation up to uptime gets there."""
+    """Utilisation at which EBITDA is zero in `year`; None if it is above the utilisation ceiling."""
     gap = _fixed_costs(site, year) - site.revenue.other_income_per_month * 12
     if gap <= 0:
         return 0.0
@@ -102,7 +103,7 @@ def breakeven_utilisation_pct(site: SiteInputs, year: int = 1) -> float | None:
     if margin <= 0:
         return None
     pct = gap / (_rated_kwh(site) * margin) * 100
-    return pct if pct <= site.operations.uptime_pct else None
+    return pct if pct <= site.operations.utilisation_ceiling_pct else None
 
 
 def yearly_model(site: SiteInputs) -> list[YearRow]:

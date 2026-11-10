@@ -47,6 +47,7 @@ GROUPS: list[tuple[str, list[FormField]]] = [
     ("Operations", [
         FormField("operations.utilisation_pct_year1", "Utilisation in year 1 (%)", "Energy delivered / (rated power x 24 h x 365), the usual energy-based measure. Indian public chargers often run at 1-10%.", "pct"),
         FormField("operations.utilisation_growth_pts_per_year", "Utilisation growth (points/year)", "Added each year: 2 means 8% -> 10% -> 12%.", "pct"),
+        FormField("operations.max_utilisation_pct", "Maximum utilisation (%)", "Growth stops here. Busy public DC sites rarely pass 15-20%; an overnight depot is limited by its charging window (8 h a day is about 33%).", "pct"),
         FormField("operations.uptime_pct", "Uptime (%)", "Share of time the chargers are working. Utilisation cannot exceed it.", "pct"),
         FormField("operations.om_per_charger_year", "O&M and AMC (Rs/charger/year)", "AMC quote from the charger vendor.", "rupees"),
         FormField("operations.csms_per_charger_month", "CSMS (Rs/charger/month)", "From your CSMS contract.", "rupees"),

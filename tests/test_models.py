@@ -68,5 +68,10 @@ def test_subsidy_above_capex_is_rejected():
 
 
 def test_utilisation_above_uptime_is_rejected():
-    with pytest.raises(ValidationError, match="cannot exceed uptime"):
+    with pytest.raises(ValidationError, match="cannot exceed maximum utilisation or uptime"):
         Operations(utilisation_pct_year1=96, uptime_pct=95)
+
+
+def test_utilisation_above_maximum_is_rejected():
+    with pytest.raises(ValidationError, match="cannot exceed maximum utilisation"):
+        Operations(utilisation_pct_year1=20, max_utilisation_pct=15)
