@@ -6,6 +6,8 @@ A free calculator for would-be charge point operators, property owners, fuel ret
 operators. Pick a preset, replace the numbers with your own, and see payback, breakeven utilisation,
 NPV and IRR in a few seconds.
 
+**Try it: [kodeserv-cpo-calculator.streamlit.app](https://kodeserv-cpo-calculator.streamlit.app/)**
+
 ![Screenshot of the calculator](docs/screenshot.png)
 
 > For estimation and learning. Not a certified compliance or financial tool. Every default is
