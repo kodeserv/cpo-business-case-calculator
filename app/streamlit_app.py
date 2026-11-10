@@ -6,7 +6,7 @@ from cpo_calc.finance import evaluate
 from cpo_calc.presets import ILLUSTRATIVE_NOTE, PRESETS
 from cpo_calc.scenarios import SCENARIO_FACTORS, evaluate_scenarios
 from display import pct, rupees_lakh, scenario_table, yearly_table, years
-from form import GROUPS, FormField, from_state, to_state
+from form import GROUPS, FormField, error_message, from_state, to_state
 
 DISCLAIMER = "For estimation and learning. Not a certified compliance or financial tool."
 
@@ -60,7 +60,7 @@ try:
     site = from_state(st.session_state)
 except ValidationError as e:
     for err in e.errors():
-        st.error(err["msg"].removeprefix("Value error, "))
+        st.error(error_message(err["loc"], err["msg"]))
     st.stop()
 
 result = evaluate(site)
@@ -87,6 +87,13 @@ with left:
 with right:
     st.subheader("Year-1 EBITDA by utilisation")
     st.plotly_chart(charts.ebitda_vs_utilisation(site, result))
+    if result.breakeven_utilisation_pct is None:
+        st.caption("No utilisation up to 100% covers the fixed costs at this margin.")
+    else:
+        st.caption(
+            f"Breakeven (dot) at {result.breakeven_utilisation_pct:.1f}% utilisation; "
+            f"your year-1 assumption (dashed) is {site.operations.utilisation_pct_year1:g}%."
+        )
 
 st.subheader("Scenarios")
 factors = ", ".join(

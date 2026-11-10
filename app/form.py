@@ -63,6 +63,16 @@ GROUPS: list[tuple[str, list[FormField]]] = [
 ]
 
 ALL_FIELDS = [f for _, fields in GROUPS for f in fields]
+_LABELS = {f.path: f.label for f in ALL_FIELDS}
+
+
+def error_message(loc: tuple, msg: str) -> str:
+    """Prefix a pydantic error with the form label it belongs to, when there is one."""
+    msg = msg.removeprefix("Value error, ")
+    if loc and loc[0] == "chargers":
+        loc = ("charger", *loc[2:])
+    label = _LABELS.get(".".join(str(part) for part in loc[:2]))
+    return f"{label}: {msg}" if label else msg
 
 
 def to_state(site: SiteInputs) -> dict[str, float | int]:
