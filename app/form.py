@@ -1,0 +1,87 @@
+"""Input form layout and the mapping between form state and SiteInputs.
+
+Kept free of Streamlit imports so it can be unit tested.
+"""
+
+from collections.abc import Mapping
+from dataclasses import dataclass
+from typing import Literal
+
+from cpo_calc.models import SiteInputs
+
+Kind = Literal["count", "kw", "rupees", "rate", "pct"]
+
+
+@dataclass(frozen=True)
+class FormField:
+    path: str  # "<group>.<field>"; "charger" is the single charger group
+    label: str
+    hint: str
+    kind: Kind
+
+
+GROUPS: list[tuple[str, list[FormField]]] = [
+    ("Site", [
+        FormField("charger.power_kw", "Charger power (kW)", "Rated output of one charger, from the datasheet.", "kw"),
+        FormField("charger.count", "Number of chargers", "Identical chargers at this site.", "count"),
+        FormField("charger.hardware_cost_each", "Hardware cost per charger (Rs)", "Vendor quote per charger, including installation.", "rupees"),
+    ]),
+    ("Capex and subsidy", [
+        FormField("capex.electrical", "Electrical upstream (Rs)", "Transformer, cabling, metering and DISCOM connection charges. Often the largest item for DC sites.", "rupees"),
+        FormField("capex.civil", "Civil works (Rs)", "Foundation, canopy, signage, parking marking.", "rupees"),
+        FormField("capex.software_and_commissioning", "Software and commissioning (Rs)", "CSMS onboarding, SIMs, testing.", "rupees"),
+        FormField("capex.subsidy", "Subsidy (Rs)", "Amount sanctioned under PM E-DRIVE or a state scheme. Keep 0 until it is sanctioned.", "rupees"),
+    ]),
+    ("Electricity", [
+        FormField("energy.energy_charge_per_kwh", "Energy charge (Rs/kWh)", "EV charging category in your DISCOM's current tariff order.", "rate"),
+        FormField("energy.demand_charge_per_kva_month", "Demand charge (Rs/kVA/month)", "Fixed charge in the same tariff order. Some states waive it for EV connections.", "rate"),
+        FormField("energy.contracted_load_kva", "Contracted load (kVA)", "Sanctioned load on the connection.", "kw"),
+        FormField("energy.losses_pct", "Losses (%)", "Charger and cable losses; 5-8% is typical.", "pct"),
+    ]),
+    ("Revenue", [
+        FormField("revenue.price_per_kwh_incl_gst", "Selling price (Rs/kWh incl. GST)", "What a driver pays per kWh, as shown in the app.", "rate"),
+        FormField("revenue.gst_pct", "GST (%)", "Usually 18% for charging as a service; confirm with your CA.", "pct"),
+        FormField("revenue.payment_fees_pct", "Payment and platform fees (%)", "UPI or card gateway fees plus any eMSP or aggregator commission.", "pct"),
+        FormField("revenue.other_income_per_month", "Other income (Rs/month)", "Ads, parking, retail tie-ups.", "rupees"),
+    ]),
+    ("Operations", [
+        FormField("operations.utilisation_pct_year1", "Utilisation in year 1 (%)", "Energy delivered / (rated power x 24 h). Indian public DC sites often run below 10%.", "pct"),
+        FormField("operations.utilisation_growth_pts_per_year", "Utilisation growth (points/year)", "Added each year: 2 means 8% -> 10% -> 12%.", "pct"),
+        FormField("operations.uptime_pct", "Uptime (%)", "Share of time the chargers are working.", "pct"),
+        FormField("operations.om_per_charger_year", "O&M and AMC (Rs/charger/year)", "AMC quote from the charger vendor.", "rupees"),
+        FormField("operations.csms_per_charger_month", "CSMS (Rs/charger/month)", "From your CSMS contract.", "rupees"),
+        FormField("operations.rent_per_month", "Fixed rent (Rs/month)", "Use this or revenue share, not both.", "rupees"),
+        FormField("operations.rent_share_pct", "Revenue share to landowner (%)", "Share of revenue excluding GST. Use this or fixed rent, not both.", "pct"),
+        FormField("operations.staff_and_other_per_month", "Staff and other (Rs/month)", "Attendant, security, insurance, internet.", "rupees"),
+    ]),
+    ("Finance", [
+        FormField("finance.project_life_years", "Project life (years)", "Years over which payback, NPV and IRR are measured.", "count"),
+        FormField("finance.discount_rate_pct", "Discount rate (%)", "Return you expect from money at this risk, e.g. 12%.", "pct"),
+        FormField("finance.tariff_escalation_pct", "Electricity tariff rise (%/year)", "Expected yearly rise in energy and demand charges.", "pct"),
+        FormField("finance.price_escalation_pct", "Selling price rise (%/year)", "Expected yearly rise in your selling price.", "pct"),
+    ]),
+]
+
+ALL_FIELDS = [f for _, fields in GROUPS for f in fields]
+
+
+def to_state(site: SiteInputs) -> dict[str, float | int]:
+    """Flatten a SiteInputs (single charger group) into form values keyed by path."""
+    data = site.model_dump()
+    data["charger"] = data.pop("chargers")[0]
+    state = {}
+    for f in ALL_FIELDS:
+        group, name = f.path.split(".")
+        value = data[group][name]
+        state[f.path] = int(value) if f.kind == "count" else float(value)
+    return state
+
+
+def from_state(state: Mapping[str, float | int]) -> SiteInputs:
+    """Build validated SiteInputs from form values; raises pydantic.ValidationError."""
+    data: dict[str, dict] = {}
+    for f in ALL_FIELDS:
+        group, name = f.path.split(".")
+        data.setdefault(group, {})[name] = state[f.path]
+    data["chargers"] = [data.pop("charger")]
+    return SiteInputs.model_validate(data)
