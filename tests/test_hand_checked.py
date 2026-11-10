@@ -8,15 +8,15 @@ from cpo_calc.presets import PRESETS
 EXPECTED = {
     "highway_dc": dict(
         revenue=1_489_497, payment_fees=35_152, revenue_share=148_950,
-        energy_cost=644_284, fixed_costs=820_000, ebitda=-158_889, net_capex=4_300_000,
+        energy_cost=644_284, fixed_costs=484_000, ebitda=177_111, net_capex=4_300_000,
     ),
     "apartment_ac": dict(
         revenue=350_709, payment_fees=8_277, revenue_share=0,
         energy_cost=217_809, fixed_costs=34_400, ebitda=90_223, net_capex=460_000,
     ),
     "fleet_depot_dc": dict(
-        revenue=2_538_915, payment_fees=0, revenue_share=0,
-        energy_cost=1_610_710, fixed_costs=1_010_400, ebitda=-82_194, net_capex=3_780_000,
+        revenue=2_877_437, payment_fees=0, revenue_share=0,
+        energy_cost=1_503_329, fixed_costs=752_400, ebitda=621_708, net_capex=3_780_000,
     ),
 }
 

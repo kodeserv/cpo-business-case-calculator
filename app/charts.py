@@ -46,20 +46,28 @@ def cumulative_cash(result: SiteResult) -> go.Figure:
 
 def ebitda_vs_utilisation(site: SiteInputs, result: SiteResult) -> go.Figure:
     utils = [u / 2 for u in range(4, 51)]  # 2% to 25% in half-point steps
+    ebitda = [ebitda_at_utilisation(site, u) / LAKH for u in utils]
     fig = go.Figure(
         go.Scatter(
             x=utils,
-            y=[ebitda_at_utilisation(site, u) / LAKH for u in utils],
+            y=ebitda,
             mode="lines",
             line=dict(color=SERIES, width=2),
             hovertemplate="₹%{y:,.1f} L<extra></extra>",
             name="Year-1 EBITDA",
         )
     )
+    # The marker for the user's utilisation runs from zero upwards, so the breakeven label
+    # placed below zero never collides with it.
     yours = site.operations.utilisation_pct_year1
-    fig.add_vline(
-        x=yours, line=dict(color=REFERENCE, width=1, dash="dash"),
-        annotation_text=f"Your year 1: {yours:g}%", annotation_position="top left" if yours > 13.5 else "top right",
+    top = max(ebitda)
+    fig.add_shape(
+        type="line", x0=yours, x1=yours, y0=0, y1=top,
+        line=dict(color=REFERENCE, width=1, dash="dash"),
+    )
+    fig.add_annotation(
+        x=yours, y=top, text=f"Your year 1: {yours:g}%", showarrow=False,
+        xanchor="left" if yours <= 13.5 else "right", yanchor="bottom", font=dict(size=11),
     )
     breakeven = result.breakeven_utilisation_pct
     if breakeven is not None and 2 <= breakeven <= 25:
@@ -68,7 +76,8 @@ def ebitda_vs_utilisation(site: SiteInputs, result: SiteResult) -> go.Figure:
                 x=[breakeven], y=[0], mode="markers+text",
                 marker=dict(size=10, color=SERIES, line=dict(color="white", width=2)),
                 text=[f"Breakeven {breakeven:.1f}%"],
-                textposition="bottom right" if breakeven >= yours else "bottom left",
+                # The line rises left to right, so below-right and above-left of the point stay clear.
+                textposition="bottom right" if breakeven <= 20 else "top left",
                 hoverinfo="skip",
             )
         )
