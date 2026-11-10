@@ -3,7 +3,7 @@ from pydantic import ValidationError
 from streamlit.testing.v1 import AppTest
 
 from cpo_calc.presets import PRESETS
-from form import ALL_FIELDS, from_state, to_state
+from form import ALL_FIELDS, error_message, from_state, to_state
 
 
 @pytest.mark.parametrize("key", list(PRESETS))
@@ -43,3 +43,20 @@ def test_page_shows_six_tiles_and_scenarios():
         "Net capex", "Payback", "Breakeven utilisation", "Year-3 EBITDA", "NPV", "IRR",
     ]
     assert at.metric[0].value == "₹43.0 L"
+
+
+def test_errors_name_the_field_they_belong_to():
+    state = to_state(PRESETS["highway_dc"].inputs) | {"finance.project_life_years": 40, "charger.count": 0}
+    with pytest.raises(ValidationError) as caught:
+        from_state(state)
+    messages = sorted(error_message(e["loc"], e["msg"]) for e in caught.value.errors())
+    assert messages == [
+        "Number of chargers: Input should be greater than or equal to 1",
+        "Project life (years): Input should be less than or equal to 25",
+    ]
+
+
+def test_cross_field_errors_keep_their_own_message():
+    assert error_message(("operations",), "Value error, use either fixed rent or revenue share, not both") == (
+        "use either fixed rent or revenue share, not both"
+    )

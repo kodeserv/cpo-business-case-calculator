@@ -81,7 +81,7 @@ APARTMENT_AC = Preset(
 FLEET_DEPOT_DC = Preset(
     key="fleet_depot_dc",
     title="Fleet depot DC",
-    summary="4 x 30 kW DC charging a cab or delivery fleet overnight in its own yard, billed by invoice.",
+    summary="4 x 30 kW DC charging a cab or delivery fleet overnight in a corner of its yard rented to the operator, billed by invoice.",
     inputs=SiteInputs(
         chargers=[ChargerGroup(power_kw=30, count=4, hardware_cost_each=600_000)],
         capex=Capex(electrical=1_000_000, civil=300_000, software_and_commissioning=80_000),
