@@ -22,8 +22,9 @@ class YearRow:
 
 
 def utilisation_pct(site: SiteInputs, year: int) -> float:
+    """Energy-based utilisation: kWh delivered / (rated kW x all hours). Downtime caps it at uptime."""
     ops = site.operations
-    return min(ops.utilisation_pct_year1 + ops.utilisation_growth_pts_per_year * (year - 1), 100)
+    return min(ops.utilisation_pct_year1 + ops.utilisation_growth_pts_per_year * (year - 1), ops.uptime_pct)
 
 
 @dataclass(frozen=True)
@@ -67,14 +68,14 @@ def _fixed_costs(site: SiteInputs, year: int) -> float:
     )
 
 
-def _available_kwh(site: SiteInputs) -> float:
-    """Energy the site could deliver in a year at 100% utilisation, after downtime."""
-    return site.total_power_kw * HOURS_PER_YEAR * site.operations.uptime_pct / 100
+def _rated_kwh(site: SiteInputs) -> float:
+    """Energy the site would deliver running at rated power every hour of the year."""
+    return site.total_power_kw * HOURS_PER_YEAR
 
 
 def year_row(site: SiteInputs, year: int) -> YearRow:
     util = utilisation_pct(site, year)
-    energy_kwh = _available_kwh(site) * util / 100
+    energy_kwh = _rated_kwh(site) * util / 100
     unit = _per_kwh(site, year)
     fixed_costs = _fixed_costs(site, year)
     other_income = site.revenue.other_income_per_month * 12
@@ -93,15 +94,15 @@ def year_row(site: SiteInputs, year: int) -> YearRow:
 
 
 def breakeven_utilisation_pct(site: SiteInputs, year: int = 1) -> float | None:
-    """Utilisation at which EBITDA is zero in `year`; None if no utilisation gets there."""
+    """Utilisation at which EBITDA is zero in `year`; None if no utilisation up to uptime gets there."""
     gap = _fixed_costs(site, year) - site.revenue.other_income_per_month * 12
     if gap <= 0:
         return 0.0
     margin = _per_kwh(site, year).margin
     if margin <= 0:
         return None
-    pct = gap / (_available_kwh(site) * margin) * 100
-    return pct if pct <= 100 else None
+    pct = gap / (_rated_kwh(site) * margin) * 100
+    return pct if pct <= site.operations.uptime_pct else None
 
 
 def yearly_model(site: SiteInputs) -> list[YearRow]:
@@ -110,6 +111,6 @@ def yearly_model(site: SiteInputs) -> list[YearRow]:
 
 def ebitda_at_utilisation(site: SiteInputs, utilisation_pct: float, year: int = 1) -> float:
     """EBITDA in `year` if the site ran at `utilisation_pct`, all else unchanged."""
-    energy_kwh = _available_kwh(site) * utilisation_pct / 100
+    energy_kwh = _rated_kwh(site) * utilisation_pct / 100
     other_income = site.revenue.other_income_per_month * 12
     return energy_kwh * _per_kwh(site, year).margin + other_income - _fixed_costs(site, year)

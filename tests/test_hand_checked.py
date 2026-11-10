@@ -7,16 +7,16 @@ from cpo_calc.presets import PRESETS
 
 EXPECTED = {
     "highway_dc": dict(
-        revenue=1_489_497, payment_fees=35_152, revenue_share=148_950,
-        energy_cost=644_284, fixed_costs=484_000, ebitda=177_111, net_capex=4_300_000,
+        revenue=1_567_892, payment_fees=37_002, revenue_share=156_789,
+        energy_cost=678_194, fixed_costs=484_000, ebitda=211_907, net_capex=4_300_000,
     ),
     "apartment_ac": dict(
-        revenue=350_709, payment_fees=8_277, revenue_share=0,
-        energy_cost=217_809, fixed_costs=34_400, ebitda=90_223, net_capex=460_000,
+        revenue=369_167, payment_fees=8_712, revenue_share=0,
+        energy_cost=229_272, fixed_costs=34_400, ebitda=96_783, net_capex=460_000,
     ),
     "fleet_depot_dc": dict(
-        revenue=2_877_437, payment_fees=0, revenue_share=0,
-        energy_cost=1_503_329, fixed_costs=752_400, ebitda=621_708, net_capex=3_780_000,
+        revenue=3_028_881, payment_fees=0, revenue_share=0,
+        energy_cost=1_582_452, fixed_costs=752_400, ebitda=694_030, net_capex=3_780_000,
     ),
 }
 
