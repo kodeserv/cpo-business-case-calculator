@@ -13,7 +13,7 @@ def rupees_lakh(amount: float) -> str:
 
 
 def years(value: float | None, project_life: int) -> str:
-    return f"{value:.1f} years" if value is not None else f"Not within {project_life} years"
+    return f"{value:.1f} years" if value is not None else f"Over {project_life} years"
 
 
 def pct(value: float | None, missing: str = "n/a") -> str:

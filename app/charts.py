@@ -57,28 +57,15 @@ def ebitda_vs_utilisation(site: SiteInputs, result: SiteResult) -> go.Figure:
             name="Year-1 EBITDA",
         )
     )
-    # The marker for the user's utilisation runs from zero upwards, so the breakeven label
-    # placed below zero never collides with it.
-    yours = site.operations.utilisation_pct_year1
-    top = max(ebitda)
-    fig.add_shape(
-        type="line", x0=yours, x1=yours, y0=0, y1=top,
-        line=dict(color=REFERENCE, width=1, dash="dash"),
-    )
-    fig.add_annotation(
-        x=yours, y=top, text=f"Your year 1: {yours:g}%", showarrow=False,
-        xanchor="left" if yours <= 13.5 else "right", yanchor="bottom", font=dict(size=11),
-    )
+    # Both reference marks are explained in the caption under the chart, so no labels can collide.
+    fig.add_vline(x=site.operations.utilisation_pct_year1, line=dict(color=REFERENCE, width=1, dash="dash"))
     breakeven = result.breakeven_utilisation_pct
     if breakeven is not None and 2 <= breakeven <= 25:
         fig.add_trace(
             go.Scatter(
-                x=[breakeven], y=[0], mode="markers+text",
+                x=[breakeven], y=[0], mode="markers",
                 marker=dict(size=10, color=SERIES, line=dict(color="white", width=2)),
-                text=[f"Breakeven {breakeven:.1f}%"],
-                # The line rises left to right, so below-right and above-left of the point stay clear.
-                textposition="bottom right" if breakeven <= 20 else "top left",
-                hoverinfo="skip",
+                hovertemplate=f"Breakeven {breakeven:.1f}%<extra></extra>",
             )
         )
     return _layout(fig, "Utilisation (%)")

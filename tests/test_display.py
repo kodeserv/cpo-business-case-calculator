@@ -7,7 +7,7 @@ from display import pct, rupees_lakh, scenario_table, yearly_table, years
 def test_formats_for_missing_values():
     assert rupees_lakh(4_300_000) == "₹43.0 L"
     assert rupees_lakh(-1_744_355) == "-₹17.4 L"
-    assert years(None, 10) == "Not within 10 years"
+    assert years(None, 10) == "Over 10 years"
     assert pct(None, "Not reachable") == "Not reachable"
 
 
