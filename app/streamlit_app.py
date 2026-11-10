@@ -12,7 +12,7 @@ DISCLAIMER = "For estimation and learning. Not a certified compliance or financi
 
 STEP = {"count": 1, "kw": 1.0, "rupees": 1_000.0, "rate": 0.5, "pct": 0.5}
 MAX = {"pct": 100.0}
-FORMAT = {"count": "%d", "kw": "%.1f", "rupees": "%d", "rate": "%.2f", "pct": "%.1f"}
+FORMAT = {"count": "%d", "kw": "%.1f", "rupees": "%.0f", "rate": "%.2f", "pct": "%.1f"}
 
 
 def load_preset() -> None:
