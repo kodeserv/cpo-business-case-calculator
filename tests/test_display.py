@@ -29,4 +29,4 @@ def test_verdict_levels():
     warn = evaluate(PRESETS["highway_dc"].inputs)
     assert verdict(good, 12, 10)[0] == "good"
     assert verdict(warn, 12, 10)[0] == "warn"
-    assert verdict(warn, 12, 10)[1].startswith("It pays back in 7.2 years, but earns 7.2% a year")
+    assert verdict(warn, 12, 10)[1].startswith("It pays back in 6.6 years, but earns 9.4% a year")

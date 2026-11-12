@@ -7,11 +7,6 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 Rupees = Annotated[float, Field(ge=0)]
 Percent = Annotated[float, Field(ge=0, le=100)]
 
-# 2024 MoP charging guidelines: public stations pay 0.7x the tariff in solar hours
-# (9 am to 4 pm) and 1.3x outside them.
-SOLAR_HOURS_FACTOR = 0.7
-NON_SOLAR_HOURS_FACTOR = 1.3
-
 
 class _Input(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -37,17 +32,6 @@ class Energy(_Input):
     demand_charge_per_kva_month: Rupees = 0
     contracted_load_kva: Annotated[float, Field(ge=0)] = 0
     losses_pct: Annotated[float, Field(ge=0, lt=100)] = 7
-    time_of_day: bool = False
-    solar_hours_share_pct: Percent = 40
-
-    @property
-    def effective_energy_charge_per_kwh(self) -> float:
-        """Energy charge averaged over when charging happens, if time-of-day pricing applies."""
-        if not self.time_of_day:
-            return self.energy_charge_per_kwh
-        solar = self.solar_hours_share_pct / 100
-        factor = solar * SOLAR_HOURS_FACTOR + (1 - solar) * NON_SOLAR_HOURS_FACTOR
-        return self.energy_charge_per_kwh * factor
 
 
 class Revenue(_Input):
