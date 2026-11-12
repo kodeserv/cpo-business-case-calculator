@@ -8,7 +8,7 @@ from cpo_calc.presets import PRESETS
 EXPECTED = {
     "highway_dc": dict(
         revenue=1_567_892, payment_fees=37_002, revenue_share=156_789,
-        energy_cost=678_194, fixed_costs=484_000, ebitda=211_907, net_capex=4_300_000,
+        energy_cost=718_885, fixed_costs=484_000, ebitda=171_215, net_capex=4_300_000,
     ),
     "apartment_ac": dict(
         revenue=369_167, payment_fees=8_712, revenue_share=0,

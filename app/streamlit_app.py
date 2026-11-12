@@ -6,6 +6,7 @@ import landing
 from cpo_calc.finance import evaluate
 from cpo_calc.presets import ILLUSTRATIVE_NOTE, PRESETS
 from cpo_calc.scenarios import SCENARIO_FACTORS, evaluate_scenarios
+from cpo_calc.yearly import price_breakdown
 from display import pct, rupees_lakh, scenario_table, verdict, yearly_table, years
 from form import (
     GROUPS,
@@ -22,6 +23,8 @@ DISCLAIMER = "For estimation and learning. Not a certified compliance or financi
 REPO_URL = "https://github.com/kodeserv/cpo-business-case-calculator"
 
 FORMAT = {"count": "%d", "kw": "%.0f", "rupees": "%.0f", "rate": "₹%.2f", "pct": "%.1f%%"}
+# Inputs that only matter when another input is switched on.
+ENABLED_BY = {"energy.solar_hours_share_pct": "energy.time_of_day"}
 VERDICT_BOX = {"good": st.success, "warn": st.warning, "bad": st.error}
 VERDICT_ICON = {"good": "✅", "warn": "⚠️", "bad": "⛔"}
 
@@ -31,7 +34,9 @@ def load_preset() -> None:
 
 
 def field_input(f: FormField) -> None:
-    if f.path == "charger.power_kw":
+    if f.kind == "toggle":
+        st.toggle(f.label, key=f.path, help=f.hint)
+    elif f.path == "charger.power_kw":
         st.select_slider(
             f.label, options=POWER_OPTIONS_KW, key=f.path, help=f.hint, format_func=lambda kw: f"{kw:g} kW"
         )
@@ -41,6 +46,7 @@ def field_input(f: FormField) -> None:
         st.slider(
             f.label, min_value=cast(r.low), max_value=cast(r.high), step=cast(r.step),
             key=f.path, help=f.hint, format=FORMAT[f.kind],
+            disabled=f.path in ENABLED_BY and not st.session_state[ENABLED_BY[f.path]],
         )
     else:
         st.number_input(f.label, key=f.path, help=f.hint, min_value=0.0, step=1_000.0, format=FORMAT[f.kind])
@@ -87,6 +93,12 @@ except ValidationError as e:
         st.error(error_message(err["loc"], err["msg"]))
     st.stop()
 
+if site.energy.time_of_day:
+    st.caption(
+        f"Time-of-day pricing is on: with {site.energy.solar_hours_share_pct:g}% of charging in solar hours, "
+        f"electricity averages ₹{site.energy.effective_energy_charge_per_kwh:.2f}/kWh before losses."
+    )
+
 result = evaluate(site)
 life = site.finance.project_life_years
 
@@ -106,6 +118,15 @@ tiles = [
 for row in (tiles[:3], tiles[3:]):
     for col, (label, value, hint) in zip(st.columns(3), row):
         col.metric(label, value, help=hint, border=True)
+
+breakdown = price_breakdown(site)
+if breakdown is not None:
+    st.subheader(f"Where each ₹{breakdown[0][1]:g} goes")
+    st.caption(
+        "Year 1, per kWh sold. Fixed costs (staff, rent, upkeep, software) are spread over the "
+        "kWh sold, so they shrink as the site gets busier."
+    )
+    st.plotly_chart(charts.price_breakdown(breakdown))
 
 left, right = st.columns(2)
 with left:

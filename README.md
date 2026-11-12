@@ -44,7 +44,7 @@ For each year *t* of the project life:
 | Revenue excl. GST | energy × price incl. GST ÷ (1 + GST) |
 | Payment fees | energy × price incl. GST × fee %, since gateways charge on what the driver pays |
 | Revenue share | revenue excl. GST × share % |
-| Energy cost | energy ÷ (1 − losses) × energy charge |
+| Energy cost | energy ÷ (1 − losses) × energy charge (blended for time of day, if on) |
 | Fixed costs | demand charge × contracted kVA × 12 + O&M + CSMS + fixed rent + staff and other |
 | EBITDA | revenue − fees − revenue share − energy cost + other income − fixed costs |
 
@@ -52,6 +52,11 @@ For each year *t* of the project life:
   (rated power × every hour of the year). It is not the time a car is plugged in, which reads
   higher. It grows by a fixed number of points each year until it reaches your maximum
   utilisation, and it can never exceed uptime.
+- **Time-of-day pricing** (optional): public stations under the 2024 Ministry of Power guidelines
+  pay 0.7× the energy charge from 9 am to 4 pm and 1.3× at other times. You set the share of
+  charging that happens in solar hours, and the energy charge is blended accordingly.
+- **Where each rupee goes:** the year-1 price per kWh is split into GST, fees, revenue share,
+  electricity, fixed costs spread over the kWh sold, and the profit left.
 - **Escalation:** the energy and demand charges rise with the tariff escalation; the selling price
   rises with the price escalation. Other costs stay flat.
 - **Breakeven utilisation** is the year-1 utilisation at which EBITDA is zero (shown as not
