@@ -53,7 +53,7 @@ def _per_kwh(site: SiteInputs, year: int) -> _PerKwh:
         revenue=revenue,
         payment_fees=price_incl_gst * r.payment_fees_pct / 100,
         revenue_share=revenue * o.rent_share_pct / 100,
-        energy_cost=e.energy_charge_per_kwh * tariff_factor / (1 - e.losses_pct / 100),
+        energy_cost=e.effective_energy_charge_per_kwh * tariff_factor / (1 - e.losses_pct / 100),
     )
 
 
@@ -115,3 +115,26 @@ def ebitda_at_utilisation(site: SiteInputs, utilisation_pct: float, year: int = 
     energy_kwh = _rated_kwh(site) * utilisation_pct / 100
     other_income = site.revenue.other_income_per_month * 12
     return energy_kwh * _per_kwh(site, year).margin + other_income - _fixed_costs(site, year)
+
+
+def price_breakdown(site: SiteInputs, year: int = 1) -> list[tuple[str, float]] | None:
+    """Where each rupee of the selling price goes in `year`, per kWh sold.
+
+    Fixed costs and other income are spread over the kWh sold that year, so the last item,
+    profit per kWh, equals EBITDA / kWh. None when nothing is sold.
+    """
+    row = year_row(site, year)
+    if row.energy_kwh == 0:
+        return None
+    unit = _per_kwh(site, year)
+    price = site.revenue.price_per_kwh_incl_gst * (1 + site.finance.price_escalation_pct / 100) ** (year - 1)
+    return [
+        ("Price paid by driver", price),
+        ("GST", -(price - unit.revenue)),
+        ("Payment and platform fees", -unit.payment_fees),
+        ("Landowner's revenue share", -unit.revenue_share),
+        ("Electricity, incl. losses", -unit.energy_cost),
+        ("Fixed costs", -row.fixed_costs / row.energy_kwh),
+        ("Other income", row.other_income / row.energy_kwh),
+        ("Profit (EBITDA)", row.ebitda / row.energy_kwh),
+    ]

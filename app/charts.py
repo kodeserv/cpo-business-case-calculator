@@ -69,3 +69,37 @@ def ebitda_vs_utilisation(site: SiteInputs, result: SiteResult) -> go.Figure:
             )
         )
     return _layout(fig, "Utilisation (%)")
+
+
+DEDUCTION = "#eb6834"
+ADDITION = "#1baf7a"
+
+
+def price_breakdown(items: list[tuple[str, float]]) -> go.Figure:
+    """Horizontal waterfall from the driver's price down to profit per kWh."""
+    shown = [items[0]] + [(label, v) for label, v in items[1:-1] if abs(v) >= 0.005] + [items[-1]]
+    # Values ride in the category labels, so no bar text can collide with an axis label on a phone.
+    labels = [f"{label}  {'−' if v < 0 else ''}₹{abs(v):,.2f}" for label, v in shown]
+    values = [v for _, v in shown]
+    measures = ["absolute"] + ["relative"] * (len(shown) - 2) + ["total"]
+    fig = go.Figure(
+        go.Waterfall(
+            orientation="h",
+            y=labels,
+            x=values,
+            measure=measures,
+            decreasing=dict(marker=dict(color=DEDUCTION)),
+            increasing=dict(marker=dict(color=ADDITION)),
+            totals=dict(marker=dict(color=SERIES)),
+            connector=dict(line=dict(color=REFERENCE, width=1, dash="dot")),
+            hovertemplate="%{y}: ₹%{x:,.2f} per kWh<extra></extra>",
+        )
+    )
+    fig.update_layout(
+        margin=dict(l=8, r=8, t=8, b=8),
+        height=60 + 40 * len(shown),
+        showlegend=False,
+        xaxis=dict(title="₹ per kWh", zeroline=True, zerolinecolor=REFERENCE),
+        yaxis=dict(autorange="reversed"),
+    )
+    return fig

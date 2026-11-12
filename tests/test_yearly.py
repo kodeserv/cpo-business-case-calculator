@@ -1,7 +1,13 @@
 import pytest
 
 from cpo_calc.models import Energy, Revenue
-from cpo_calc.yearly import breakeven_utilisation_pct, ebitda_at_utilisation, year_row, yearly_model
+from cpo_calc.yearly import (
+    breakeven_utilisation_pct,
+    ebitda_at_utilisation,
+    price_breakdown,
+    year_row,
+    yearly_model,
+)
 from tests.factories import simple_site
 
 
@@ -97,3 +103,33 @@ def test_breakeven_above_maximum_utilisation_is_not_reachable():
         update={"operations": site.operations.model_copy(update={"utilisation_pct_year1": 2, "max_utilisation_pct": 2})}
     )
     assert breakeven_utilisation_pct(capped) is None
+
+
+def test_time_of_day_blends_solar_and_non_solar_rates():
+    site = simple_site()
+    tod = site.model_copy(
+        update={"energy": Energy(energy_charge_per_kwh=5, losses_pct=0, time_of_day=True, solar_hours_share_pct=25)}
+    )
+    # 25% at 0.7x and 75% at 1.3x -> 1.15x of Rs 5
+    assert tod.energy.effective_energy_charge_per_kwh == pytest.approx(5.75)
+    assert year_row(tod, 1).energy_cost == pytest.approx(8_760 * 5.75)
+
+
+def test_half_solar_hours_leaves_the_rate_unchanged():
+    energy = Energy(energy_charge_per_kwh=8, time_of_day=True, solar_hours_share_pct=50)
+    assert energy.effective_energy_charge_per_kwh == pytest.approx(8)
+
+
+def test_price_breakdown_ends_in_profit_per_kwh():
+    site = simple_site(rent_share_pct=10)
+    items = price_breakdown(site)
+    row = year_row(site, 1)
+    assert items[0] == ("Price paid by driver", 11.8)
+    assert sum(value for _, value in items[:-1]) == pytest.approx(items[-1][1])
+    assert items[-1][1] == pytest.approx(row.ebitda / row.energy_kwh)
+
+
+def test_price_breakdown_is_none_when_nothing_is_sold():
+    site = simple_site()
+    idle = site.model_copy(update={"operations": site.operations.model_copy(update={"utilisation_pct_year1": 0})})
+    assert price_breakdown(idle) is None

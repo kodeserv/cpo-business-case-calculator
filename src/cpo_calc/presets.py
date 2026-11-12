@@ -44,8 +44,14 @@ HIGHWAY_DC = Preset(
     inputs=SiteInputs(
         chargers=[ChargerGroup(power_kw=60, count=2, hardware_cost_each=1_100_000)],
         capex=Capex(electrical=1_500_000, civil=500_000, software_and_commissioning=100_000),
-        # Public station: single-part tariff (energy only) under the 2024 MoP guidelines.
-        energy=Energy(energy_charge_per_kwh=7.5, contracted_load_kva=140, losses_pct=7),
+        # Public station: energy-only tariff with solar-hour pricing under the 2024 MoP guidelines.
+        energy=Energy(
+            energy_charge_per_kwh=7.5,
+            contracted_load_kva=140,
+            losses_pct=7,
+            time_of_day=True,
+            solar_hours_share_pct=40,
+        ),
         revenue=Revenue(price_per_kwh_incl_gst=22, payment_fees_pct=2),
         operations=Operations(
             utilisation_pct_year1=8,

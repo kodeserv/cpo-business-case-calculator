@@ -13,9 +13,10 @@ Uptime only caps utilisation; it does not reduce energy a second time.
 | Revenue excl. GST | 18,50,112 / 1.18 | 15,67,892 |
 | Payment fees | 2% of 18,50,112 | 37,002 |
 | Revenue share to landowner | 10% of 15,67,891.53 | 1,56,789 |
-| Energy cost | 84,096 / 0.93 x 7.5 | 6,78,194 |
+| Energy rate with time-of-day | 7.5 x (40% x 0.7 + 60% x 1.3) = 7.5 x 1.06 = 7.95 | |
+| Energy cost | 84,096 / 0.93 x 7.95 | 7,18,885 |
 | Fixed costs | no demand charge (public station); O&M 2 x 50,000; CSMS 2 x 1,000 x 12; staff 30,000 x 12 | 4,84,000 |
-| **EBITDA** | | **2,11,907** |
+| **EBITDA** | | **1,71,215** |
 | Net capex | 2 x 11,00,000 + 15,00,000 + 5,00,000 + 1,00,000 | 43,00,000 |
 
 ## Apartment society AC (4 x 7.4 kW)

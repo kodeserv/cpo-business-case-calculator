@@ -13,7 +13,7 @@ def test_form_state_round_trips_every_preset(key):
 
 
 def test_form_covers_every_input_field():
-    assert len(ALL_FIELDS) == len(to_state(PRESETS["highway_dc"].inputs)) == 28
+    assert len(ALL_FIELDS) == len(to_state(PRESETS["highway_dc"].inputs)) == 30
 
 
 def test_invalid_form_state_raises():
@@ -81,3 +81,16 @@ def test_page_shows_a_verdict_that_follows_the_sliders():
     assert "below the 12% you could expect elsewhere" in at.warning[0].value
     at.slider(key="revenue.price_per_kwh_incl_gst").set_value(9.0).run()  # below energy cost
     assert "does not earn back its cost" in at.error[0].value
+
+
+def test_page_shows_where_the_price_goes():
+    at = AppTest.from_file("../app/streamlit_app.py").run()
+    assert "Where each ₹22 goes" in [h.value for h in at.subheader]
+
+
+def test_solar_share_slider_is_disabled_until_time_of_day_is_on():
+    at = AppTest.from_file("../app/streamlit_app.py").run()
+    at.selectbox(key="preset").select("apartment_ac").run()
+    assert at.slider(key="energy.solar_hours_share_pct").disabled
+    at.toggle(key="energy.time_of_day").set_value(True).run()
+    assert not at.slider(key="energy.solar_hours_share_pct").disabled
