@@ -1,0 +1,8 @@
+[theme.light]
+primaryColor = "#1f6fd1"
+
+[theme.dark]
+primaryColor = "#4b8fe0"
+
+[server]
+headless = true

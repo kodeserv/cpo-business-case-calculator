@@ -1,7 +1,7 @@
 from cpo_calc.finance import evaluate
 from cpo_calc.presets import PRESETS
 from cpo_calc.scenarios import evaluate_scenarios
-from display import pct, rupees_lakh, scenario_table, yearly_table, years
+from display import pct, rupees_lakh, scenario_table, verdict, yearly_table, years
 
 
 def test_formats_for_missing_values():
@@ -22,3 +22,11 @@ def test_scenario_table_has_three_columns():
     site = PRESETS["fleet_depot_dc"].inputs
     table = scenario_table(evaluate_scenarios(site), 10)
     assert list(table.columns) == ["Pessimistic", "Base", "Optimistic"]
+
+
+def test_verdict_levels():
+    good = evaluate(PRESETS["fleet_depot_dc"].inputs)
+    warn = evaluate(PRESETS["highway_dc"].inputs)
+    assert verdict(good, 12, 10)[0] == "good"
+    assert verdict(warn, 12, 10)[0] == "warn"
+    assert verdict(warn, 12, 10)[1].startswith("It pays back in 6.6 years, but earns 9.4% a year")
