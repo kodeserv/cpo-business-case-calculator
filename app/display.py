@@ -20,6 +20,26 @@ def pct(value: float | None, missing: str = "n/a") -> str:
     return f"{value:.1f}%" if value is not None else missing
 
 
+def verdict(result: SiteResult, discount_rate_pct: float, project_life: int) -> tuple[str, str]:
+    """A plain-language summary and its level: 'good', 'warn' or 'bad'."""
+    target = f"{discount_rate_pct:g}%"
+    if result.payback_years is None:
+        return "bad", (
+            f"This site does not earn back its cost within {project_life} years. "
+            "Try more usage, a higher price, lower rent or a subsidy."
+        )
+    returns = pct(result.irr_pct)
+    if result.npv < 0:
+        return "warn", (
+            f"It pays back in {result.payback_years:.1f} years, but earns {returns} a year, "
+            f"below the {target} you could expect elsewhere."
+        )
+    return "good", (
+        f"It pays back in {result.payback_years:.1f} years and earns {returns} a year, "
+        f"above the {target} you could expect elsewhere."
+    )
+
+
 def yearly_table(result: SiteResult) -> pd.DataFrame:
     """One row per year, rounded to the rupee; the table view and the CSV export."""
     rows = [

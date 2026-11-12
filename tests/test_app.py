@@ -3,7 +3,7 @@ from pydantic import ValidationError
 from streamlit.testing.v1 import AppTest
 
 from cpo_calc.presets import PRESETS
-from form import ALL_FIELDS, error_message, from_state, to_state
+from form import ALL_FIELDS, KEY_FIELDS, POWER_OPTIONS_KW, SLIDERS, error_message, from_state, to_state
 
 
 @pytest.mark.parametrize("key", list(PRESETS))
@@ -26,7 +26,7 @@ def test_page_runs_and_switching_preset_loads_its_values():
     at = AppTest.from_file("../app/streamlit_app.py").run()
     assert not at.exception
     at.selectbox(key="preset").select("apartment_ac").run()
-    assert at.number_input(key="charger.power_kw").value == 7.4
+    assert at.select_slider(key="charger.power_kw").value == 7.4
     assert not at.exception
 
 
@@ -60,3 +60,24 @@ def test_cross_field_errors_keep_their_own_message():
     assert error_message(("operations",), "Value error, use either fixed rent or revenue share, not both") == (
         "use either fixed rent or revenue share, not both"
     )
+
+
+@pytest.mark.parametrize("key", list(PRESETS))
+def test_every_preset_value_sits_on_its_slider(key):
+    state = to_state(PRESETS[key].inputs)
+    assert state["charger.power_kw"] in POWER_OPTIONS_KW
+    for path, r in SLIDERS.items():
+        value = state[path]
+        assert r.low <= value <= r.high, path
+        assert ((value - r.low) / r.step) == pytest.approx(round((value - r.low) / r.step)), path
+
+
+def test_key_fields_are_sliders():
+    assert set(KEY_FIELDS) <= set(SLIDERS)
+
+
+def test_page_shows_a_verdict_that_follows_the_sliders():
+    at = AppTest.from_file("../app/streamlit_app.py").run()
+    assert "below the 12% you could expect elsewhere" in at.warning[0].value
+    at.slider(key="revenue.price_per_kwh_incl_gst").set_value(9.0).run()  # below energy cost
+    assert "does not earn back its cost" in at.error[0].value
