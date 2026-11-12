@@ -53,7 +53,7 @@ def _per_kwh(site: SiteInputs, year: int) -> _PerKwh:
         revenue=revenue,
         payment_fees=price_incl_gst * r.payment_fees_pct / 100,
         revenue_share=revenue * o.rent_share_pct / 100,
-        energy_cost=e.effective_energy_charge_per_kwh * tariff_factor / (1 - e.losses_pct / 100),
+        energy_cost=e.energy_charge_per_kwh * tariff_factor / (1 - e.losses_pct / 100),
     )
 
 

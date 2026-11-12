@@ -23,8 +23,6 @@ DISCLAIMER = "For estimation and learning. Not a certified compliance or financi
 REPO_URL = "https://github.com/kodeserv/cpo-business-case-calculator"
 
 FORMAT = {"count": "%d", "kw": "%.0f", "rupees": "%.0f", "rate": "₹%.2f", "pct": "%.1f%%"}
-# Inputs that only matter when another input is switched on.
-ENABLED_BY = {"energy.solar_hours_share_pct": "energy.time_of_day"}
 VERDICT_BOX = {"good": st.success, "warn": st.warning, "bad": st.error}
 VERDICT_ICON = {"good": "✅", "warn": "⚠️", "bad": "⛔"}
 
@@ -34,9 +32,7 @@ def load_preset() -> None:
 
 
 def field_input(f: FormField) -> None:
-    if f.kind == "toggle":
-        st.toggle(f.label, key=f.path, help=f.hint)
-    elif f.path == "charger.power_kw":
+    if f.path == "charger.power_kw":
         st.select_slider(
             f.label, options=POWER_OPTIONS_KW, key=f.path, help=f.hint, format_func=lambda kw: f"{kw:g} kW"
         )
@@ -46,7 +42,6 @@ def field_input(f: FormField) -> None:
         st.slider(
             f.label, min_value=cast(r.low), max_value=cast(r.high), step=cast(r.step),
             key=f.path, help=f.hint, format=FORMAT[f.kind],
-            disabled=f.path in ENABLED_BY and not st.session_state[ENABLED_BY[f.path]],
         )
     else:
         st.number_input(f.label, key=f.path, help=f.hint, min_value=0.0, step=1_000.0, format=FORMAT[f.kind])
@@ -92,12 +87,6 @@ except ValidationError as e:
     for err in e.errors():
         st.error(error_message(err["loc"], err["msg"]))
     st.stop()
-
-if site.energy.time_of_day:
-    st.caption(
-        f"Time-of-day pricing is on: with {site.energy.solar_hours_share_pct:g}% of charging in solar hours, "
-        f"electricity averages ₹{site.energy.effective_energy_charge_per_kwh:.2f}/kWh before losses."
-    )
 
 result = evaluate(site)
 life = site.finance.project_life_years

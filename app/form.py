@@ -9,7 +9,7 @@ from typing import Literal
 
 from cpo_calc.models import SiteInputs
 
-Kind = Literal["count", "kw", "rupees", "rate", "pct", "toggle"]
+Kind = Literal["count", "kw", "rupees", "rate", "pct"]
 
 
 @dataclass(frozen=True)
@@ -33,9 +33,7 @@ GROUPS: list[tuple[str, list[FormField]]] = [
         FormField("capex.subsidy", "Subsidy (₹)", "Amount sanctioned under PM E-DRIVE or a state scheme. Keep 0 until it is sanctioned.", "rupees"),
     ]),
     ("Electricity", [
-        FormField("energy.energy_charge_per_kwh", "Energy charge (₹/kWh)", "EV charging category in your DISCOM's current tariff order. With time-of-day pricing on, enter the normal rate.", "rate"),
-        FormField("energy.time_of_day", "Time-of-day pricing", "Public stations under the 2024 MoP guidelines pay 0.7x the energy charge from 9 am to 4 pm and 1.3x at other times. Captive connections follow their state's own time-of-day tariff: leave this off and enter a blended rate.", "toggle"),
-        FormField("energy.solar_hours_share_pct", "Charging in solar hours (%)", "Share of energy sold between 9 am and 4 pm. Highway and office sites charge more by day; depots and homes mostly at night.", "pct"),
+        FormField("energy.energy_charge_per_kwh", "Energy charge (₹/kWh)", "EV charging category in your DISCOM's current tariff order.", "rate"),
         FormField("energy.demand_charge_per_kva_month", "Demand charge (₹/kVA/month)", "Public stations: usually 0, as the 2024 MoP guidelines ask for an energy-only tariff until March 2028. Captive or depot connections often pay it. Check your state's tariff order.", "rate"),
         FormField("energy.contracted_load_kva", "Contracted load (kVA)", "Sanctioned load on the connection.", "kw"),
         FormField("energy.losses_pct", "Losses (%)", "Charger and cable losses; 5-8% is typical.", "pct"),
@@ -87,7 +85,6 @@ SLIDERS: dict[str, SliderRange] = {
     "energy.demand_charge_per_kva_month": SliderRange(0, 500, 10),
     "energy.contracted_load_kva": SliderRange(0, 1000, 10),
     "energy.losses_pct": SliderRange(0, 20, 0.5),
-    "energy.solar_hours_share_pct": SliderRange(0, 100, 5),
     "revenue.price_per_kwh_incl_gst": SliderRange(0, 40, 0.5),
     "revenue.gst_pct": SliderRange(0, 28, 1),
     "revenue.payment_fees_pct": SliderRange(0, 10, 0.25),
@@ -113,7 +110,7 @@ def error_message(loc: tuple, msg: str) -> str:
     return f"{label}: {msg}" if label else msg
 
 
-def to_state(site: SiteInputs) -> dict[str, float | int | bool]:
+def to_state(site: SiteInputs) -> dict[str, float | int]:
     """Flatten a SiteInputs (single charger group) into form values keyed by path."""
     data = site.model_dump()
     data["charger"] = data.pop("chargers")[0]
@@ -121,12 +118,11 @@ def to_state(site: SiteInputs) -> dict[str, float | int | bool]:
     for f in ALL_FIELDS:
         group, name = f.path.split(".")
         value = data[group][name]
-        cast = {"count": int, "toggle": bool}.get(f.kind, float)
-        state[f.path] = cast(value)
+        state[f.path] = int(value) if f.kind == "count" else float(value)
     return state
 
 
-def from_state(state: Mapping[str, float | int | bool]) -> SiteInputs:
+def from_state(state: Mapping[str, float | int]) -> SiteInputs:
     """Build validated SiteInputs from form values; raises pydantic.ValidationError."""
     data: dict[str, dict] = {}
     for f in ALL_FIELDS:
